@@ -30,24 +30,21 @@ public class FlightDAO {
      */
     public List<Flight> getAllFlights(){
         Connection connection = ConnectionUtil.getConnection();
-        List<Flight> flights = new ArrayList<>();
-        try {
-            //Write SQL logic here
-            String sql = "change me";
-
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            ResultSet rs = preparedStatement.executeQuery();
-            while(rs.next()){
-                Flight flight = new Flight(rs.getInt("flight_id"), rs.getString("departure_city"),
-                        rs.getString("arrival_city"));
-                flights.add(flight);
-            }
-        }catch(SQLException e){
-            System.out.println(e.getMessage());
+    List<Flight> flights = new ArrayList<>();
+    try {
+        String sql = "SELECT * FROM flight";
+        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        ResultSet rs = preparedStatement.executeQuery();
+        while(rs.next()){
+            Flight flight = new Flight(rs.getInt("flight_id"), rs.getString("departure_city"),
+                    rs.getString("arrival_city"));
+            flights.add(flight);
         }
-        return flights;
+    } catch(SQLException e){
+        e.printStackTrace();
     }
-
+    return flights;
+}
     /**
      * TODO: Retrieve a specific flight using its flight ID.
      *
@@ -64,25 +61,21 @@ public class FlightDAO {
      */
     public Flight getFlightById(int id){
         Connection connection = ConnectionUtil.getConnection();
-        try {
-            //Write SQL logic here
-            String sql = "change me";
-            
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
-
-            //write preparedStatement's setString and setInt methods here.
-
-            ResultSet rs = preparedStatement.executeQuery();
-            while(rs.next()){
-                Flight flight = new Flight(rs.getInt("flight_id"), rs.getString("departure_city"),
-                        rs.getString("arrival_city"));
-                return flight;
-            }
-        }catch(SQLException e){
-            System.out.println(e.getMessage());
+    try {
+        String sql = "SELECT * FROM flight WHERE flight_id = ?";
+        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        preparedStatement.setInt(1, id);
+        ResultSet rs = preparedStatement.executeQuery();
+        if(rs.next()){
+            Flight flight = new Flight(rs.getInt("flight_id"), rs.getString("departure_city"),
+                    rs.getString("arrival_city"));
+            return flight;
         }
-        return null;
+    } catch(SQLException e){
+        e.printStackTrace();
     }
+    return null;
+}
 
     /**
      * TODO: Add a flight record into the database which matches the values contained in the flight object.
@@ -105,26 +98,22 @@ public class FlightDAO {
      */
     public Flight insertFlight(Flight flight){
         Connection connection = ConnectionUtil.getConnection();
-        try {
-            //Write SQL logic here. When inserting, you only need to define the departure_city and arrival_city
-            //values (two columns total!)
-            String sql = "change me" ;
-            PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-
-            //write preparedStatement's setString and setInt methods here.
-
-
-            preparedStatement.executeUpdate();
-            ResultSet pkeyResultSet = preparedStatement.getGeneratedKeys();
-            if(pkeyResultSet.next()){
-                int generated_flight_id = (int) pkeyResultSet.getLong(1);
-                return new Flight(generated_flight_id, flight.getDeparture_city(), flight.getArrival_city());
-            }
-        }catch(SQLException e){
-            System.out.println(e.getMessage());
+    try {
+        String sql = "INSERT INTO flight (departure_city, arrival_city) VALUES (?, ?)";
+        PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+        preparedStatement.setString(1, flight.getDeparture_city());
+        preparedStatement.setString(2, flight.getArrival_city());
+        preparedStatement.executeUpdate();
+        ResultSet pkeyResultSet = preparedStatement.getGeneratedKeys();
+        if(pkeyResultSet.next()){
+            int generated_flight_id = pkeyResultSet.getInt(1);
+            return new Flight(generated_flight_id, flight.getDeparture_city(), flight.getArrival_city());
         }
-        return null;
+    } catch(SQLException e){
+        e.printStackTrace();
     }
+    return null;
+}
 
     /**
      * TODO: Update the flight identified by the flight id to the values contained in the flight object.
@@ -145,19 +134,21 @@ public class FlightDAO {
      */
     public void updateFlight(int id, Flight flight){
         Connection connection = ConnectionUtil.getConnection();
-        try {
-            //Write SQL logic here
-            String sql = "change me";
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+    try {
+        String sql = "UPDATE flight SET departure_city=?, arrival_city=? WHERE flight_id=?;";
+        PreparedStatement preparedStatement = connection.prepareStatement(sql);
 
-            //write PreparedStatement setString and setInt methods here.
+        // Set parameters
+        preparedStatement.setString(1, flight.getDeparture_city());
+        preparedStatement.setString(2, flight.getArrival_city());
+        preparedStatement.setInt(3, id);
 
-
-            preparedStatement.executeUpdate();
-        }catch(SQLException e){
-            System.out.println(e.getMessage());
-        }
+        // Execute the update
+        preparedStatement.executeUpdate();
+    } catch(SQLException e){
+        System.out.println(e.getMessage());
     }
+}
 
     /**
      * TODO: Retrieve all flights following a particular flight path.
@@ -178,24 +169,21 @@ public class FlightDAO {
      */
     public List<Flight> getAllFlightsFromCityToCity(String departure_city, String arrival_city){
         Connection connection = ConnectionUtil.getConnection();
-        List<Flight> flights = new ArrayList<>();
-        try {
-            //Write SQL logic here
-            String sql = "change me";
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
-
-            //write PreparedStatement setString and setInt methods here.
-
-
-            ResultSet rs = preparedStatement.executeQuery();
-            while(rs.next()){
-                Flight flight = new Flight(rs.getInt("flight_id"), rs.getString("departure_city"),
-                        rs.getString("arrival_city"));
-                flights.add(flight);
-            }
-        }catch(SQLException e){
-            System.out.println(e.getMessage());
+    List<Flight> flights = new ArrayList<>();
+    try {
+        String sql = "SELECT * FROM flight WHERE departure_city = ? AND arrival_city = ?";
+        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        preparedStatement.setString(1, departure_city);
+        preparedStatement.setString(2, arrival_city);
+        ResultSet rs = preparedStatement.executeQuery();
+        while(rs.next()){
+            Flight flight = new Flight(rs.getInt("flight_id"), rs.getString("departure_city"),
+                    rs.getString("arrival_city"));
+            flights.add(flight);
         }
-        return flights;
+    } catch(SQLException e){
+        e.printStackTrace();
     }
+    return flights;
+}
 }
